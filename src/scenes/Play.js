@@ -7,12 +7,20 @@ class Play extends Phaser.Scene {
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('spaceship', './assets/spaceship.png');
         this.load.image('starfield', './assets/starfield.png');
+        this.load.image('fighter', './assets/fighter.png');
 
         this.load.spritesheet('explosion', './assets/explosion.png', {
             frameWidth: 64,
             frameHeight: 32,
             startFrame: 0,
             endFrame: 9
+        });
+
+        this.load.spritesheet('fighteranim', './assets/fighteranim.png', {
+            frameWidth: 48,
+            frameHeight: 24,
+            startFrame: 0,
+            endFrame: 24
         });
     }
     
@@ -25,7 +33,7 @@ class Play extends Phaser.Scene {
         this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
 
-        this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
+        this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding*2.5, 'fighter').setOrigin(0.5, 0);
 
         this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
         this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0, 0);
@@ -35,6 +43,7 @@ class Play extends Phaser.Scene {
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+        keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.anims.create({
             key: 'explode',
@@ -44,6 +53,16 @@ class Play extends Phaser.Scene {
                 first: 0
             }),
             frameRate: 30
+        });
+
+        this.anims.create({
+            key: 'fighterflip',
+            frames: this.anims.generateFrameNumbers('fighteranim', {
+                start: 0,
+                end: 24,
+                first: 0
+            }),
+            frameRate: 60
         });
 
         this.p1Score = 0;
