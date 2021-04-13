@@ -19,7 +19,7 @@ class Fighter extends Phaser.GameObjects.Sprite {
         if(Phaser.Input.Keyboard.JustDown(keyF) && !this.isFiring) {
             this.isFiring = true;
             this.sfxRocket.play();
-            
+
         }
         if(Phaser.Input.Keyboard.JustDown(keySPACE) && !this.isDodging) {
             this.isDodging = true;
@@ -36,7 +36,6 @@ class Fighter extends Phaser.GameObjects.Sprite {
     }
 
     reset() {
-        this.isFiring = false;
-        this.y = game.config.height - borderUISize - borderPadding;
+        
     }
 }
