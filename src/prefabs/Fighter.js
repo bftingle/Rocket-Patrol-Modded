@@ -4,7 +4,9 @@ class Fighter extends Phaser.GameObjects.Sprite {
 
         scene.add.existing(this);
         this.isDodging = false;
+        this.isRecovering = false;
         this.moveSpeed = 1;
+        this.health = game.settings.fighterHealth;
 
         this.sfxRocket = scene.sound.add('sfx_rocket');
     }
@@ -33,4 +35,17 @@ class Fighter extends Phaser.GameObjects.Sprite {
     }
 
     reset() {}
+
+    recover(telomere) {
+        if(telomere < 1) {
+            this.alpha = 1;
+            this.isRecovering = false;
+            return;
+        }
+        if(this.alpha == 1) this.alpha = 0;
+        else this.alpha = 1;
+        this.clock = this.scene.time.delayedCall(100, () => {
+            this.recover(telomere - 1);
+        }, null, this.scene);
+    }
 }
