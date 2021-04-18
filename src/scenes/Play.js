@@ -32,8 +32,8 @@ class Play extends Phaser.Scene {
         this.starfield2 = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'starfieldClr').setOrigin(0, 0);
         this.starfield3 = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'starfieldBig').setOrigin(0, 0);
 
-        this.ship01 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*8, 'spaceshipVert', 0, 30).setOrigin(0, 0);
-        this.ship02 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*4, 'spaceshipVert', 0, 20).setOrigin(0, 0);
+        this.ship01 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*8, 'spaceshipVert', 0, 10).setOrigin(0, 0);
+        this.ship02 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*4, 'spaceshipVert', 0, 10).setOrigin(0, 0);
         this.ship03 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0, 'spaceshipVert', 0, 10).setOrigin(0, 0);
         
         this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
@@ -211,12 +211,12 @@ class Play extends Phaser.Scene {
             mid = highest;
             highest = temp;
         }
-        if(Math.abs(lowest.x - this.p1Rocket.x) < borderUISize) return lowest.x;
-        if(Math.abs(lowest.x - this.p1Rocket.x) < borderUISize*2) return -1;
-        if(Math.abs(mid.x - this.p1Rocket.x) < borderUISize) return mid.x;
-        if(Math.abs(mid.x - this.p1Rocket.x) < borderUISize*2) return -1;
-        if(Math.abs(highest.x - this.p1Rocket.x) < borderUISize) return highest.x;
-        if(Math.abs(highest.x - this.p1Rocket.x) < borderUISize*2) return -1;
+        if(Math.abs((lowest.x + lowest.width/2) - this.p1Rocket.x) < borderUISize) return lowest.x + lowest.width/2;
+        if(Math.abs((lowest.x + lowest.width/2) - this.p1Rocket.x) < borderUISize*2) return -1;
+        if(Math.abs((mid.x + mid.width/2) - this.p1Rocket.x) < borderUISize) return mid.x + mid.width/2;
+        if(Math.abs((mid.x + mid.width/2) - this.p1Rocket.x) < borderUISize*2) return -1;
+        if(Math.abs((highest.x + highest.width/2) - this.p1Rocket.x) < borderUISize) return highest.x + highest.width/2;
+        if(Math.abs((highest.x + highest.width/2) - this.p1Rocket.x) < borderUISize*2) return -1;
         return this.p1Rocket.x;
     }
 }
