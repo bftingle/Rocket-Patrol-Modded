@@ -12,6 +12,7 @@ class Play extends Phaser.Scene {
         this.load.image('starfieldBig', './assets/starfieldBig.png');
         this.load.image('fighter', './assets/fighter.png');
         this.load.image('boss', './assets/boss0.2.png');
+        this.load.image('orb', './assets/orb.png');
 
         this.load.spritesheet('explosion', './assets/explosion.png', {
             frameWidth: 64,
@@ -36,6 +37,10 @@ class Play extends Phaser.Scene {
         this.ship01 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*8, 'spaceshipVert', 0, 10).setOrigin(0, 0);
         this.ship02 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*4, 'spaceshipVert', 0, 10).setOrigin(0, 0);
         this.ship03 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0, 'spaceshipVert', 0, 10).setOrigin(0, 0);
+        this.orb01 = new Orb(this, -999, -999, 'orb', 0, -150).setOrigin(0.5, 1);
+        this.orb02 = new Orb(this, -999, -999, 'orb', 0, -80).setOrigin(0.5, 1);
+        this.orb03 = new Orb(this, -999, -999, 'orb', 0, 80).setOrigin(0.5, 1);
+        this.orb04 = new Orb(this, -999, -999, 'orb', 0, 150).setOrigin(0.5, 1);
         this.boss = new Boss(this, -999, -999, 'boss', 0).setOrigin(0.5, 1);
         
         this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
@@ -44,8 +49,10 @@ class Play extends Phaser.Scene {
         this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
 
-        this.whiteHealth = this.add.rectangle(game.config.width - (game.settings.fighterHealth + 2) * borderUISize, borderUISize * 2, game.settings.fighterHealth * borderUISize, borderPadding * 2, 0xFF0000).setOrigin(0, 0);
+        this.add.rectangle(game.config.width - (game.settings.fighterHealth + 2) * borderUISize, borderUISize * 2, game.settings.fighterHealth * borderUISize, borderPadding * 2, 0xFF0000).setOrigin(0, 0);
         this.whiteHealth = this.add.rectangle(game.config.width - (game.settings.fighterHealth + 2) * borderUISize, borderUISize * 2, game.settings.fighterHealth * borderUISize, borderPadding * 2, 0xFFFFFF).setOrigin(0, 0);
+        this.bossRedHealth = this.add.rectangle(borderUISize * 2, borderUISize * 4, game.config.width - (borderUISize * 4), borderUISize, 0xFF0000).setOrigin(0, 0).setAlpha(0);
+        this.bossWhiteHealth = this.add.rectangle(borderUISize * 2, borderUISize * 4, game.config.width - (borderUISize * 4), borderUISize, 0xFFFFFF).setOrigin(0, 0).setAlpha(0);
 
         this.rocket1 = new Rocket(this, game.config.width/2, game.config.height*2, 'rocket').setOrigin(0.5, 0);
         this.rocket2 = new Rocket(this, game.config.width/2, game.config.height*2, 'rocket').setOrigin(0.5, 0);
@@ -106,11 +113,16 @@ class Play extends Phaser.Scene {
                 this.boss.x = game.config.width/2;
                 this.boss.y = 0;
                 this.boss.direction = 0;
+                this.bossRedHealth.alpha = 1;
+                this.bossWhiteHealth.alpha = 1;
             }, null, this);
         }, null, this);
 
         this.firing = false;
         this.gOTexted = false;
+
+        this.warningText = this.add.text(game.config.width/2, game.config.height/2, 'WARNING', scoreConfig).setOrigin(0.5).setAlpha(0);
+        this.waning = false;
     }
 
     update() {
@@ -140,8 +152,12 @@ class Play extends Phaser.Scene {
             this.ship03.update();
         }
 
-        if(this.phaseOver) {
+        if(this.phaseOver && !this.gameOver) {
             this.boss.update();
+            this.orb01.update();
+            this.orb02.update();
+            this.orb03.update();
+            this.orb04.update();
         }
 
         if(this.checkCollision(this.rocket1, this.ship01)) {
@@ -195,10 +211,86 @@ class Play extends Phaser.Scene {
             this.whiteHealth.width = this.p1Rocket.health * borderUISize;
             if(this.p1Rocket.health < 1) this.gameOver = true;
         }
+
+        if(this.phaseOver) {
+            if(this.checkCollision2(this.rocket1, this.boss)) {
+                this.rocket1.reset();
+                this.boss.health--;
+                this.bossWhiteHealth.width = (this.boss.health / game.settings.bossHealth) * (game.config.width - (borderUISize * 4));
+                this.p1Score += 20;
+                this.scoreLeft.text = this.p1Score;
+                if(this.boss.health < 1) {
+                    this.gameOver = true;
+                    this.p1Score *= 2;
+                    this.scoreLeft.text = this.p1Score;
+                    this.sound.play('sfx_explosion');
+                }
+            }
+            if(this.checkCollision2(this.rocket2, this.boss)) {
+                this.rocket2.reset();
+                this.boss.health--;
+                this.bossWhiteHealth.width = (this.boss.health / game.settings.bossHealth) * (game.config.width - (borderUISize * 4));
+                this.p1Score += 20;
+                this.scoreLeft.text = this.p1Score;
+                if(this.boss.health < 1) {
+                    this.gameOver = true;
+                    this.p1Score *= 2;
+                    this.scoreLeft.text = this.p1Score;
+                    this.sound.play('sfx_explosion');
+                }
+            }
+            if(!this.p1Rocket.isRecovering && this.checkCollision2(this.p1Rocket, this.orb01)) {
+                this.p1Rocket.isRecovering = true;
+                this.p1Rocket.recover(20);
+                this.orb01.reset();
+                this.p1Rocket.health--;
+                this.whiteHealth.width = this.p1Rocket.health * borderUISize;
+                if(this.p1Rocket.health < 1) this.gameOver = true;
+            }
+            if(!this.p1Rocket.isRecovering && this.checkCollision2(this.p1Rocket, this.orb02)) {
+                this.p1Rocket.isRecovering = true;
+                this.p1Rocket.recover(20);
+                this.orb02.reset();
+                this.p1Rocket.health--;
+                this.whiteHealth.width = this.p1Rocket.health * borderUISize;
+                if(this.p1Rocket.health < 1) this.gameOver = true;
+            }
+            if(!this.p1Rocket.isRecovering && this.checkCollision2(this.p1Rocket, this.orb03)) {
+                this.p1Rocket.isRecovering = true;
+                this.p1Rocket.recover(20);
+                this.orb03.reset();
+                this.p1Rocket.health--;
+                this.whiteHealth.width = this.p1Rocket.health * borderUISize;
+                if(this.p1Rocket.health < 1) this.gameOver = true;
+            }
+            if(!this.p1Rocket.isRecovering && this.checkCollision2(this.p1Rocket, this.orb04)) {
+                this.p1Rocket.isRecovering = true;
+                this.p1Rocket.recover(20);
+                this.orb04.reset();
+                this.p1Rocket.health--;
+                this.whiteHealth.width = this.p1Rocket.health * borderUISize;
+                if(this.p1Rocket.health < 1) this.gameOver = true;
+            }
+
+            if(this.warning) {
+                if(this.waning) this.warningText.alpha -= 0.02;
+                else this.warningText.alpha += 0.02;
+                if(this.warningText.alpha == 1) this.waning = true;
+                if(this.warningText.alpha == 0) this.waning = false;
+            }
+        }
     }
 
     checkCollision(rocket, ship) {
         if(rocket.x < ship.x + ship.width && rocket.x + rocket.width > ship.x && rocket.y < ship.y + ship.height && rocket.height + rocket.y > ship.y) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    checkCollision2(rocket, ship) {
+        if(rocket.x < ship.x + ship.width/2 && rocket.x + rocket.width > ship.x - ship.width/2 && rocket.y < ship.y && rocket.height + rocket.y > ship.y - ship.height ) {
             return true;
         } else {
             return false;
@@ -224,6 +316,7 @@ class Play extends Phaser.Scene {
     }
 
     fireEvent() {
+        if(this.warning) return;
         let trajectory = this.p1Rocket.x;
         if(!this.phaseOver) trajectory = this.aimAssist();
         if(trajectory == -1) {
