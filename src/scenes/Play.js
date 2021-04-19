@@ -11,6 +11,7 @@ class Play extends Phaser.Scene {
         this.load.image('starfieldClr', './assets/starfieldClr.png');
         this.load.image('starfieldBig', './assets/starfieldBig.png');
         this.load.image('fighter', './assets/fighter.png');
+        this.load.image('boss', './assets/boss0.2.png');
 
         this.load.spritesheet('explosion', './assets/explosion.png', {
             frameWidth: 64,
@@ -35,6 +36,7 @@ class Play extends Phaser.Scene {
         this.ship01 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*8, 'spaceshipVert', 0, 10).setOrigin(0, 0);
         this.ship02 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0 - borderUISize*4, 'spaceshipVert', 0, 10).setOrigin(0, 0);
         this.ship03 = new Spaceship(this, borderUISize*2 + (Math.random() * (game.config.width - borderUISize*2)), 0, 'spaceshipVert', 0, 10).setOrigin(0, 0);
+        this.boss = new Boss(this, -999, -999, 'boss', 0).setOrigin(0.5, 1);
         
         this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
         this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0);
@@ -92,12 +94,19 @@ class Play extends Phaser.Scene {
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
         
         this.phaseOver = false;
+        this.warning = false;
         this.gameOver = false;
         scoreConfig.fixedWidth = 0;
         this.gOText1 = this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5).setAlpha(0);
         this.gOText2 = this.add.text(game.config.width/2, game.config.height/2 + 64, '(R) to Restart or (M) for Menu', scoreConfig).setOrigin(0.5).setAlpha(0);
         this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.phaseOver = true;
+            this.clock = this.time.delayedCall(3000, () => {
+                this.warning = true;
+                this.boss.x = game.config.width/2;
+                this.boss.y = 0;
+                this.boss.direction = 0;
+            }, null, this);
         }, null, this);
 
         this.firing = false;
@@ -129,6 +138,10 @@ class Play extends Phaser.Scene {
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
+        }
+
+        if(this.phaseOver) {
+            this.boss.update();
         }
 
         if(this.checkCollision(this.rocket1, this.ship01)) {
@@ -196,7 +209,7 @@ class Play extends Phaser.Scene {
         ship.alpha = 0;
         let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
         boom.anims.play('explode');
-        if(!this.scene.phaseOver) ship.reset();
+        ship.reset();
         boom.on('animationcomplete', () => {
             ship.alpha = 1;
             boom.destroy();
@@ -211,7 +224,8 @@ class Play extends Phaser.Scene {
     }
 
     fireEvent() {
-        let trajectory = this.aimAssist();
+        let trajectory = this.p1Rocket.x;
+        if(!this.phaseOver) trajectory = this.aimAssist();
         if(trajectory == -1) {
             this.firing = true;
             return;
